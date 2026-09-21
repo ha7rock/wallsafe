@@ -1,51 +1,89 @@
 ---
 name: wallsafe
 description: >-
-  Use this when Codex should generate a batch of phone wallpapers from a short
-  preference prompt (theme/mood) for iOS/Android, with wallpaper-safe
-  composition and post-resize to real device pixels.
+  Use this when Codex should generate a batch of phone wallpapers where content
+  quality comes first — aesthetics, diversity, and creative range — from a short
+  preference prompt, then deliver wallpaper-safe composition at real device pixels.
 ---
-# Phone wallpaper batch (Image Gen 2.5 / Codex)
+# wallsafe
 
-Generate **5–10 distinct phone wallpapers** from a short user preference. This is a **wallpaper pipeline**, not generic image gen: every prompt must obey wallpaper composition rules, device pixel rules, and style diversity within one theme.
+Generate **5–10 phone wallpapers** from a short preference. The point of this skill is **content quality**: taste, variety, and creative range within one theme. Device safe-zones and exact pixels are the **delivery floor**, not the creative brief.
+
+## North star (quality first)
+
+Optimize for, in this order:
+
+1. **Aesthetics** — intentional light, palette, materials, negative space; feels designed, not stock
+2. **Diversity** — each image is a different visual language / craft, not a near-duplicate
+3. **Creativity** — surprising but coherent scenes; specific moments, not generic “cat wallpaper” tropes
+
+Reject a batch that is technically sized correctly but looks flat, samey, or cliché.
 
 ## When this applies
 
-- User wants phone wallpapers (home / lock) from a theme, mood, or soft preference
-- Target is iPhone or Android phone aspect (portrait)
-- Running under **Codex CLI** on a machine with ChatGPT/Codex image gen
+- User wants a set of phone wallpapers from a theme, mood, or soft preference
+- They care how the set *looks and varies*, not only that images exist
+- Target is iPhone or Android portrait delivery
 
-## Codex environment reality (important)
+## Creative brief (do this for every batch)
 
-On Codex-authenticated boxes (ChatGPT login, `OPENAI_API_KEY` often null):
+### Aesthetics
 
-1. Prefer **Codex built-in image generation** (or `codex exec` driving that tool).
-2. Built-in generation may **ignore exact pixel size** and may not expose `gpt-image-2.5-flare` selection.
-3. Always **post-process** with ffmpeg (or equivalent) to the device delivery size:
-   `ffmpeg -y -i INPUT -update 1 -frames:v 1 -vf "scale=W:H:force_original_aspect_ratio=increase,crop=W:H" OUTPUT`
-4. If a standalone `image_gen.py` CLI is available **and** a real platform API key exists:
-   - `gpt-image-2` accepts custom sizes (edges multiple of 16), e.g. `1312x2864`
-   - `gpt-image-2.5-flare` in the current system CLI may only allow legacy sizes `1024x1024` / `1024x1536` / `1536x1024` / `auto` — then generate portrait `1024x1536` and upscale/crop to delivery
-5. Do **not** block the batch asking the user for permission to relax model/size when the environment cannot meet them — adapt, document in `manifest.json`, finish the batch.
+For each image, decide and state in the prompt:
 
-Non-interactive Codex tip: pass the prompt as a CLI argument and redirect stdin from `/dev/null`. Avoid piping that leaves Codex stuck on `Reading additional input from stdin...`.
+- Light: direction, softness, time of day / OLED-friendly contrast
+- Palette: limited, intentional (avoid muddy rainbow)
+- Materials / medium: match the chosen style (film grain, pigment, clay, ink, vector edge)
+- Atmosphere: one clear mood word (quiet, humid, sharp, nostalgic…)
+
+Prefer **one strong subject + breathing room** over busy illustration soup.
+
+### Diversity (style wheel)
+
+Pick N **different** styles. Never reuse the same medium twice in one batch.
+
+Examples: photoreal ambient · flat vector · soft watercolor · gouache/poster · 3D soft clay · minimal color-field · 35mm film still · ink wash/sumi · retro print/halftone · dreamy bokeh close-up
+
+Also vary across the batch:
+
+- Camera distance (extreme close / medium / wide environmental)
+- Palette temperature (warm vs cool)
+- Subject scale and placement (still respect safe bands below)
+
+**Anti-pattern:** eight stickers of the same pose with different filters.
+
+### Creativity
+
+- Concrete scenes (“silver tabby on wet slate at blue hour”), not abstract “beautiful cat”
+- One twist per image (weather, era, material, framing) without breaking the theme
+- Avoid famous IP, logo marks, and meme templates
+
+## Delivery floor (wallpaper craft — required, not the headline)
+
+Still bake into every prompt:
+
+1. Full-bleed smartphone wallpaper, portrait, single frame — no phone mockup / bezel / UI chrome
+2. **Top ~12–15%** calmer (status, Dynamic Island, lock clock)
+3. **Bottom ~15–20%** quieter (Home Indicator + dock)
+4. Mode `lock` / `both`: keep upper-center relatively open for the large clock
+5. No text / logos / watermarks by default
+6. Avoid whole-frame noise that kills icon readability
+
+These constraints protect aesthetics on a real lock screen; they do not replace the creative brief.
 
 ## Inputs (collect lightly)
 
 | Field | Default if missing |
 | --- | --- |
 | Theme / mood / subject | Required — ask once if absent |
+| Aesthetic lean (optional) | e.g. quiet OLED, soft daylight, high contrast |
 | Device | `iphone-17-pro-max` if known; else ask iOS vs Android |
 | Count | `8` (clamp 5–10) |
-| Mode | `both` (lock+home friendly); `lock` if user says lock screen |
+| Mode | `both`; `lock` if user says lock screen |
 | Avoid list | empty |
-| Style list | auto (Style wheel) |
-
-Same theme, **different visual languages** — never a matching sticker series.
+| Style list | auto from style wheel |
 
 ## Device → pixels
-
-### Delivery size
 
 | Device key | Delivery `W×H` |
 | --- | --- |
@@ -55,61 +93,50 @@ Same theme, **different visual languages** — never a matching sticker series.
 | `android-fhd+` | `1080×2340` |
 | `android-qhd` | `1440×3200` |
 
-### Preferred generation size (when API allows custom)
+Preferred generate sizes when custom API sizes work (edges ×16): e.g. `1312×2864` → crop/scale to `1320×2868`. Legacy fallback: `1024×1536` then scale/crop.
 
-Edges must be multiples of 16; long/short ≤ 3:1.
+## Codex environment reality
 
-| Device key | Generate then crop/scale to delivery |
-| --- | --- |
-| `iphone-17-pro-max` | `1312×2864` → `1320×2868` |
-| `iphone-17-pro` | `1200×2624` → `1206×2622` |
-| `android-fhd+` | `1088×2336` → `1080×2340` |
+On ChatGPT/Codex auth (`OPENAI_API_KEY` often null):
 
-Fallback when only legacy sizes work: generate `1024×1536`, then scale/crop to delivery.
+1. Prefer Codex built-in image generation
+2. It may ignore exact pixels — always ffmpeg to delivery size
+3. Do not stall asking permission to adapt model/size — adapt, note in `manifest.json`, finish
 
-## Wallpaper composition (non-negotiable)
+Non-interactive: pass prompt as CLI arg; stdin from `/dev/null`.
 
-Bake into every prompt:
-
-1. Full-bleed smartphone wallpaper, portrait, single frame — not a mockup, bezel, or UI screenshot
-2. **Top ~12–15%** calm / low-detail (Dynamic Island, status, lock clock)
-3. **Bottom ~15–20%** avoid critical subject (Home Indicator + dock)
-4. **`lock` / `both`:** keep upper-center relatively open for large clock
-5. **No text** by default (no letters, logos, watermarks)
-6. Avoid whole-frame high-frequency noise so icons stay readable
-7. Clear depth; full bleed; no borders, Polaroid, collage grid
-
-## Prompt template (English for the image model)
+## Prompt template (English)
 
 ```text
-Smartphone wallpaper, portrait full-bleed, {aspect} phone background.
+Smartphone wallpaper, portrait full-bleed.
 Theme: {theme}.
-Style: {one style only}.
-Scene: {1–2 concrete sentences}.
-Composition: main interest mid-to-lower band; top status/island band and bottom dock band simpler; lock-clock-friendly open upper center.
-Lighting / mood: {from preference}.
-Constraints: no text, no logos, no watermark, no phone frame, no UI chrome, no collage, not a sticker sheet.
+Creative intent: {aesthetic + one concrete creative beat}.
+Style / medium: {one style only}.
+Scene: {1–2 specific sentences — place, action, atmosphere}.
+Light & palette: {clear choices}.
+Composition: subject readable mid-to-lower band; top and bottom bands quieter for clock/dock; strong negative space where it helps taste.
+Constraints: no text, logos, watermark, phone frame, UI, collage; not a sticker sheet; distinct from other images in this batch.
 ```
-
-## Style wheel
-
-Pick N different styles (examples): photoreal ambient, flat vector, soft watercolor, gouache/poster, 3D soft clay, minimal color-field, 35mm film still, ink wash/sumi, retro halftone, dreamy bokeh close-up.
-
-Change camera distance, palette, and composition each time.
 
 ## Workflow
 
-1. Parse inputs; resolve device + delivery size.
-2. Choose N styles.
-3. Generate N images via best available Codex/Image path.
-4. Resize/crop each to **exact delivery** resolution.
-5. Save: `wallpapers/{device}/{theme-slug}/{nn}-{style-slug}.png` + `manifest.json` (theme, styles, tool/model used, sizes, prompts, limitations).
-6. Show a short index; offer refinement on favorites only.
+1. Parse preference → write a one-line creative north star for the batch
+2. Choose N styles for maximum *visual* diversity
+3. Author N prompts (aesthetics + creativity first; safe bands included)
+4. Generate; post-resize to exact delivery
+5. Save `wallpapers/{device}/{theme}/{nn}-{style}.png` + `manifest.json`
+6. Quality gate before handoff (below)
 
-## Acceptance checks
+## Acceptance checks (quality gate)
 
-Regen if: mockup/borders, busy under clock/island or dock, text/watermark, near-duplicate of another in the batch.
+Regen if:
+
+- Looks generic / stock / samey next to siblings
+- Weak light or muddy palette
+- Style diversity failed (two frames read as the same medium)
+- Mockup/borders, text, or busy under clock/island/dock
+- Near-duplicate crop of another image in the batch
 
 ## Example
 
-Device iPhone 17 Pro Max, theme cats, count 6 → six styled wallpapers at `1320×2868`.
+Theme cats, iPhone 17 Pro Max, count 6 → six creatively distinct, aesthetically intentional wallpapers at `1320×2868`, not a matching pack.

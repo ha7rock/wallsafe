@@ -1,97 +1,75 @@
 # wallsafe
 
-**Phone wallpapers that respect the island, the clock, and the dock.**
+**Batch phone wallpapers with taste — aesthetics, diversity, creativity first.**
 
-A Codex skill for batch-generating phone wallpapers from a short preference prompt — same theme, different visual languages, sized for a real device.
+A Codex skill that turns a short preference into a set of wallpapers you can actually choose from: intentional looks, different craft languages, same theme. Safe-zones and true device pixels are the delivery floor.
 
-> 中文：给 Codex 用的手机壁纸批量 skill。不是「随便出几张竖图」，而是按锁屏时钟、灵动岛、Dock 遮挡来设计构图，并交付真机像素。
+> 中文：关注**生成内容品质**——审美、多样性、创意。遮挡安全区与真机分辨率是交付底线，不是卖点本身。
 
 ---
 
-## Why wallsafe
+## Why it exists
 
-Most image prompts treat a phone wallpaper like a tall poster. On a real iPhone, the **Dynamic Island**, **lock clock**, and **Home Screen dock** eat the frame. wallsafe bakes those occlusion bands into every prompt, then finishes at **exact device resolution** (for example iPhone 17 Pro Max `1320×2868`).
+Anyone can ask a model for “cat wallpaper.” Most batches come back as near-duplicates: same pose, same lighting, different filters.
 
-It also refuses the lazy “sticker pack” pattern: one theme, **six to ten different media styles** — photoreal, flat vector, watercolor, clay 3D, color-field, ink wash — not eight near-identical cats in a row.
+wallsafe is opinionated about **quality of the set**:
+
+1. **Aesthetics** — light, palette, materials, negative space
+2. **Diversity** — each frame is a different medium / visual language
+3. **Creativity** — specific scenes and twists, not stock tropes
+
+Then it still ships like a product: lock-clock and dock bands respected, finished at real resolution (e.g. iPhone 17 Pro Max `1320×2868`).
 
 ---
 
 ## Gallery — theme: cats · iPhone 17 Pro Max
 
-Generated on Codex with built-in image gen, then aligned to `1320×2868`.
+Same subject. Six crafts. Built to compare side by side.
 
 | Photoreal ambient | Flat vector | Soft watercolor |
 | :---: | :---: | :---: |
-| <img src="examples/thumbs/01-photoreal-ambient.jpg" width="180" alt="Photoreal ambient cat wallpaper" /> | <img src="examples/thumbs/02-flat-vector.jpg" width="180" alt="Flat vector cat wallpaper" /> | <img src="examples/thumbs/03-soft-watercolor.jpg" width="180" alt="Soft watercolor cat wallpaper" /> |
+| <img src="examples/thumbs/01-photoreal-ambient.jpg" width="180" alt="Photoreal ambient" /> | <img src="examples/thumbs/02-flat-vector.jpg" width="180" alt="Flat vector" /> | <img src="examples/thumbs/03-soft-watercolor.jpg" width="180" alt="Soft watercolor" /> |
 
 | 3D clay | Minimal color-field | Ink wash |
 | :---: | :---: | :---: |
-| <img src="examples/thumbs/04-3d-clay.jpg" width="180" alt="3D clay cat wallpaper" /> | <img src="examples/thumbs/05-minimal-colorfield.jpg" width="180" alt="Minimal color-field cat wallpaper" /> | <img src="examples/thumbs/06-ink-wash.jpg" width="180" alt="Ink wash cat wallpaper" /> |
+| <img src="examples/thumbs/04-3d-clay.jpg" width="180" alt="3D clay" /> | <img src="examples/thumbs/05-minimal-colorfield.jpg" width="180" alt="Minimal color-field" /> | <img src="examples/thumbs/06-ink-wash.jpg" width="180" alt="Ink wash" /> |
 
 Full-resolution PNGs: [`examples/iphone-17-pro-max/cats/`](examples/iphone-17-pro-max/cats/)
 
 ---
 
-## What you get
+## What “good” means here
 
-- **Wallpaper-safe composition** — calm top band, quieter dock band, lock-clock-friendly upper center
-- **Device delivery sizes** — not “roughly 9:16”
-- **Style wheel** — same subject, different craft languages
-- **Codex-ready workflow** — works with ChatGPT/Codex auth; post-resize when the model ignores exact pixels
-- **`manifest.json`** — prompts, sizes, and known limitations recorded per batch
+| Pillar | Look for |
+| --- | --- |
+| Aesthetics | Clear light and palette; calm enough to live under icons |
+| Diversity | You can name each craft without squinting |
+| Creativity | At least one concrete beat per image |
+
+Delivery floor (always on): quieter top/bottom bands, no text/mockups, exact device `W×H` after generate.
 
 ---
 
 ## Quick start (Codex)
 
 ```bash
-# copy into your Codex skills directory
 cp -R skills/wallsafe ~/.codex/skills/wallsafe
-
-# then, in Codex:
-# "Use wallsafe. iPhone 17 Pro Max. Theme: rainy neon city. 8 wallpapers."
 ```
 
-Or point Codex at this repo and say: *follow `skills/wallsafe/SKILL.md`*.
+Then: *“Use wallsafe. iPhone 17 Pro Max. Theme: quiet rainy cats. 8 wallpapers — maximize style diversity.”*
 
----
-
-## Skill highlights
-
-| Rule | Why it matters |
-| --- | --- |
-| Top ~12–15% low-detail | Status bar + Dynamic Island + lock clock |
-| Bottom ~15–20% quieter | Home Indicator + dock icons |
-| No text / frames / mockups by default | Wallpapers are backgrounds, not ads |
-| Generate → ffmpeg to delivery size | Models often ignore exact `W×H` |
-| Style diversity within one theme | A batch you can actually choose from |
-
----
-
-## Device table (excerpt)
-
-| Device | Delivery |
-| --- | --- |
-| iPhone 17 Pro Max | `1320×2868` |
-| iPhone 17 Pro | `1206×2622` |
-| Android FHD+ common | `1080×2340` |
-
-When the API requires multiples of 16, generate nearby (e.g. `1312×2864`) then crop/scale to delivery. Details in [`SKILL.md`](SKILL.md).
+Skill source: [`skills/wallsafe/SKILL.md`](skills/wallsafe/SKILL.md)
 
 ---
 
 ## Design note / 设计说明
 
-English: wallsafe is a small production spec for wallpapers — occlusion, delivery pixels, and tasteful variety — wrapped as a Codex skill so you can ask in one sentence and get a usable set.
+English: wallsafe is a creative director for wallpaper batches, with a production checklist attached — not the reverse.
 
-中文：核心不是模型会不会画，而是壁纸作为**产品交付物**的规格：遮挡区、真机分辨率、同主题多风格。偏好一句话进来，批次成品出去。
+中文：先保证一批图**好看、有差异、有想法**；再用安全区与真机像素把它们收成能上锁屏的交付物。
 
 ---
 
 ## License
 
 MIT
-
----
-
-Built for people who care how a wallpaper looks **under** the clock.
